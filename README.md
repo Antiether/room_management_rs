@@ -1,4 +1,4 @@
-# SmarterBMS 🏥
+# SmarterBMS 
 
 **Smart Bed Management System** is a Flutter-based application prototype for visualizing and managing hospital rooms and bed availability. It provides an interactive floor plan to help hospital staff monitor room occupancy, patient assignments, bed bookings, and cleaning status from a single interface.
 
@@ -21,7 +21,7 @@ This project is currently under development and is intended for demonstration an
 - **Dart** — Application programming language.
 - **Material Design** — UI components and visual styling.
 
-## 📸 Application Preview
+##  Application Preview
 
 Add screenshots or a GIF of the application here.
 
