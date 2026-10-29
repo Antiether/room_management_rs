@@ -10,6 +10,7 @@ import '../widgets/cleaning_tracker_panel.dart';
 import '../widgets/bed_action_dialog.dart';
 import '../widgets/new_patient_dialog.dart';
 import '../widgets/research_info_dialog.dart';
+import '../widgets/ai_operational_insight_card.dart';
 
 class MobileLayout extends StatefulWidget {
   final HospitalState state;
@@ -278,7 +279,7 @@ class _MobileLayoutState extends State<MobileLayout> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: DropdownButtonFormField<RoomClass?>(
-                      initialValue: state.filterRoomClass,
+                      value: state.filterRoomClass,
                       isExpanded: true,
                       decoration: InputDecoration(
                         isDense: true,
@@ -360,6 +361,8 @@ class _MobileLayoutState extends State<MobileLayout> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        AiOperationalInsightCard(ward: state.currentWard),
+        const SizedBox(height: 12),
         // BOR Card
         Card(
           child: Padding(
