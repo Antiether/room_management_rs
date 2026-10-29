@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local AI backend secrets and Python environment
+backend/.env
+backend/.venv/
+backend/__pycache__/
+backend/app/__pycache__/
