@@ -242,35 +242,72 @@ class _MobileLayoutState extends State<MobileLayout> {
       children: [
         // Mode Toggle Header (Denah Spasial vs Daftar Kamar)
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
           color: Colors.white,
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: SegmentedButton<bool>(
-                  segments: const [
-                    ButtonSegment<bool>(
-                      value: true,
-                      icon: Icon(Icons.map_outlined, size: 16),
-                      label: Text('Denah Spasial', style: TextStyle(fontSize: 11)),
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment<bool>(
+                    value: true,
+                    icon: Icon(Icons.map_outlined, size: 16),
+                    label: Text('Denah Spasial', style: TextStyle(fontSize: 11)),
+                  ),
+                  ButtonSegment<bool>(
+                    value: false,
+                    icon: Icon(Icons.view_agenda_outlined, size: 16),
+                    label: Text('Daftar Kamar', style: TextStyle(fontSize: 11)),
+                  ),
+                ],
+                selected: {_isMapView},
+                onSelectionChanged: (newSelection) {
+                  setState(() => _isMapView = newSelection.first);
+                },
+                style: const ButtonStyle(
+                  visualDensity: VisualDensity.compact,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.filter_alt_outlined, size: 18, color: Color(0xFF64748B)),
+                  const SizedBox(width: 8),
+                  const Text('Kelas kamar', style: TextStyle(fontSize: 12, color: Color(0xFF475569))),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: DropdownButtonFormField<RoomClass?>(
+                      initialValue: state.filterRoomClass,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A)),
+                      items: const [
+                        DropdownMenuItem<RoomClass?>(value: null, child: Text('Semua kelas')),
+                        DropdownMenuItem<RoomClass?>(value: RoomClass.kelas3, child: Text('Kelas 3 (KRIS)')),
+                        DropdownMenuItem<RoomClass?>(value: RoomClass.kelas2, child: Text('Kelas 2')),
+                        DropdownMenuItem<RoomClass?>(value: RoomClass.kelas1, child: Text('Kelas 1')),
+                        DropdownMenuItem<RoomClass?>(value: RoomClass.vip, child: Text('VIP')),
+                        DropdownMenuItem<RoomClass?>(value: RoomClass.vvip, child: Text('VVIP Suite')),
+                        DropdownMenuItem<RoomClass?>(value: RoomClass.icu, child: Text('ICU / Kritis')),
+                      ],
+                      onChanged: state.setRoomClassFilter,
                     ),
-                    ButtonSegment<bool>(
-                      value: false,
-                      icon: Icon(Icons.view_agenda_outlined, size: 16),
-                      label: Text('Daftar Kamar', style: TextStyle(fontSize: 11)),
+                  ),
+                  if (state.filterRoomClass != null) ...[
+                    const SizedBox(width: 4),
+                    IconButton(
+                      tooltip: 'Reset filter',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => state.setRoomClassFilter(null),
+                      icon: const Icon(Icons.close, size: 18),
                     ),
                   ],
-                  selected: {_isMapView},
-                  onSelectionChanged: (newSelection) {
-                    setState(() {
-                      _isMapView = newSelection.first;
-                    });
-                  },
-                  style: ButtonStyle(
-                    visualDensity: VisualDensity.compact,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
+                ],
               ),
             ],
           ),

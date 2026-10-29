@@ -159,11 +159,29 @@ class WardMapCanvas extends StatefulWidget {
 
 class _WardMapCanvasState extends State<WardMapCanvas> {
   late TransformationController _transformationController;
+  late _WardLayout _cachedLayout;
+  String? _cachedWardId;
+  int _cachedRoomStructure = -1;
+
+  int _roomStructureSignature(WardModel ward) => ward.rooms.fold<int>(
+        17,
+        (value, room) => value * 31 + room.id.hashCode * 7 + room.beds.length,
+      );
+
+  void _ensureLayout(WardModel ward) {
+    final signature = _roomStructureSignature(ward);
+    if (_cachedWardId != ward.id || _cachedRoomStructure != signature) {
+      _cachedLayout = _WardLayout.compute(ward);
+      _cachedWardId = ward.id;
+      _cachedRoomStructure = signature;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _transformationController = TransformationController();
+    _ensureLayout(widget.state.currentWard);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _applyInitialScale();
     });
@@ -173,7 +191,8 @@ class _WardMapCanvasState extends State<WardMapCanvas> {
     if (!mounted) return;
     final size = MediaQuery.of(context).size;
     final isMobile = widget.isMobile || size.width < 900;
-    final layout = _WardLayout.compute(widget.state.currentWard);
+    _ensureLayout(widget.state.currentWard);
+    final layout = _cachedLayout;
 
     // Fit canvas into viewport
     final scaleX = (size.width - 40) / layout.canvasWidth;
@@ -318,7 +337,9 @@ class _WardMapCanvasState extends State<WardMapCanvas> {
     final isNarrow = widget.isMobile || screenWidth < 900;
 
     // Compute dynamic layout
-    final layout = _WardLayout.compute(ward);
+    _ensureLayout(ward);
+    final layout = _cachedLayout;
+    final visibleRoomIds = filteredRooms.map((room) => room.id).toSet();
 
     return Stack(
       children: [
@@ -382,9 +403,7 @@ class _WardMapCanvasState extends State<WardMapCanvas> {
                         final pos = layout.positions[room.id];
                         if (pos == null) return const SizedBox.shrink();
 
-                        final isVisible = filteredRooms.any(
-                          (r) => r.id == room.id,
-                        );
+                        final isVisible = visibleRoomIds.contains(room.id);
 
                         return Positioned(
                           left: pos.dx,
@@ -392,14 +411,16 @@ class _WardMapCanvasState extends State<WardMapCanvas> {
                           child: AnimatedOpacity(
                             duration: const Duration(milliseconds: 250),
                             opacity: isVisible ? 1.0 : 0.15,
-                            child: SizedBox(
-                              width: 310,
-                              child: RoomCard(
-                                room: room,
-                                state: widget.state,
-                                onBedSelected: (bed) {
-                                  widget.onBedTapped(bed, room);
-                                },
+                            child: RepaintBoundary(
+                              child: SizedBox(
+                                width: 310,
+                                child: RoomCard(
+                                  room: room,
+                                  state: widget.state,
+                                  onBedSelected: (bed) {
+                                    widget.onBedTapped(bed, room);
+                                  },
+                                ),
                               ),
                             ),
                           ),
