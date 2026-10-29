@@ -33,12 +33,15 @@ class _NewPatientDialogState extends State<NewPatientDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screen = MediaQuery.sizeOf(context);
+    final compact = screen.width < 600;
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: compact ? 12 : 24, vertical: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
+        constraints: BoxConstraints(maxWidth: 480, maxHeight: screen.height * 0.88),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(compact ? 14 : 20),
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
@@ -94,10 +97,10 @@ class _NewPatientDialogState extends State<NewPatientDialog> {
                   const SizedBox(height: 12),
 
                   // Usia & Jenis Kelamin
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final stackFields = constraints.maxWidth < 380;
+                      final ageField = TextFormField(
                           controller: _ageController,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
@@ -107,12 +110,10 @@ class _NewPatientDialogState extends State<NewPatientDialog> {
                             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
                           validator: (v) => v == null || v.isEmpty ? 'Wajib' : null,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
+                        );
+                      final genderField = DropdownButtonFormField<String>(
                           initialValue: _gender,
+                          isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Jenis Kelamin *',
                             prefixIcon: Icon(Icons.wc_outlined, size: 20),
@@ -120,13 +121,25 @@ class _NewPatientDialogState extends State<NewPatientDialog> {
                             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
                           items: const [
-                            DropdownMenuItem(value: 'L', child: Text('Laki-laki (L)')),
-                            DropdownMenuItem(value: 'P', child: Text('Perempuan (P)')),
+                            DropdownMenuItem(value: 'L', child: Text('Laki-laki (L)', overflow: TextOverflow.ellipsis)),
+                            DropdownMenuItem(value: 'P', child: Text('Perempuan (P)', overflow: TextOverflow.ellipsis)),
                           ],
                           onChanged: (v) => setState(() => _gender = v!),
-                        ),
-                      ),
-                    ],
+                        );
+                      if (stackFields) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [ageField, const SizedBox(height: 12), genderField],
+                        );
+                      }
+                      return Row(
+                        children: [
+                          Expanded(child: ageField),
+                          const SizedBox(width: 12),
+                          Expanded(child: genderField),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
 
@@ -146,6 +159,7 @@ class _NewPatientDialogState extends State<NewPatientDialog> {
                   // Kategori Pembayaran (BPJS / Umum / Asuransi)
                   DropdownButtonFormField<PaymentCategory>(
                     initialValue: _payment,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Kategori Penjamin / Pembayaran *',
                       prefixIcon: Icon(Icons.payment_outlined, size: 20),
@@ -155,23 +169,23 @@ class _NewPatientDialogState extends State<NewPatientDialog> {
                     items: const [
                       DropdownMenuItem(
                         value: PaymentCategory.bpjsKelas3,
-                        child: Text('BPJS Kesehatan - Kelas 3 (KRIS)'),
+                        child: Text('BPJS Kesehatan - Kelas 3 (KRIS)', overflow: TextOverflow.ellipsis),
                       ),
                       DropdownMenuItem(
                         value: PaymentCategory.bpjsKelas2,
-                        child: Text('BPJS Kesehatan - Kelas 2'),
+                        child: Text('BPJS Kesehatan - Kelas 2', overflow: TextOverflow.ellipsis),
                       ),
                       DropdownMenuItem(
                         value: PaymentCategory.bpjsKelas1,
-                        child: Text('BPJS Kesehatan - Kelas 1'),
+                        child: Text('BPJS Kesehatan - Kelas 1', overflow: TextOverflow.ellipsis),
                       ),
                       DropdownMenuItem(
                         value: PaymentCategory.umumMandiri,
-                        child: Text('Pasien Umum (Biaya Mandiri)'),
+                        child: Text('Pasien Umum (Biaya Mandiri)', overflow: TextOverflow.ellipsis),
                       ),
                       DropdownMenuItem(
                         value: PaymentCategory.asuransiSwasta,
-                        child: Text('Asuransi Swasta / Korporasi'),
+                        child: Text('Asuransi Swasta / Korporasi', overflow: TextOverflow.ellipsis),
                       ),
                     ],
                     onChanged: (v) => setState(() => _payment = v!),
@@ -181,6 +195,7 @@ class _NewPatientDialogState extends State<NewPatientDialog> {
                   // Urgensi Masuk
                   DropdownButtonFormField<AdmissionUrgency>(
                     initialValue: _urgency,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Tingkat Urgensi Masuk *',
                       prefixIcon: Icon(Icons.emergency_outlined, size: 20),
@@ -190,11 +205,11 @@ class _NewPatientDialogState extends State<NewPatientDialog> {
                     items: const [
                       DropdownMenuItem(
                         value: AdmissionUrgency.emergencyCito,
-                        child: Text('🚨 CITO / IGD Darurat Prioritas'),
+                        child: Text('🚨 CITO / IGD Darurat Prioritas', overflow: TextOverflow.ellipsis),
                       ),
                       DropdownMenuItem(
                         value: AdmissionUrgency.electiveBiasa,
-                        child: Text('📅 Elektif / Terencana Poliklinik'),
+                        child: Text('📅 Elektif / Terencana Poliklinik', overflow: TextOverflow.ellipsis),
                       ),
                     ],
                     onChanged: (v) => setState(() => _urgency = v!),
